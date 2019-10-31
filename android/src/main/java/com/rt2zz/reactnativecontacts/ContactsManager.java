@@ -23,8 +23,8 @@ import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.CommonDataKinds.Note;
 import android.provider.ContactsContract.CommonDataKinds.Website;
 import android.provider.ContactsContract.RawContacts;
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Callback;
@@ -107,22 +107,12 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
         myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
+    /*
+     * Returns all contacts matching string
+     */
     @ReactMethod
-    public void getCount(final Callback callback) {
-        AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
-            @Override
-            protected Void doInBackground(final Void ... params) {
-                Context context = getReactApplicationContext();
-                ContentResolver cr = context.getContentResolver();
-
-                ContactsProvider contactsProvider = new ContactsProvider(cr);
-                Integer contacts = contactsProvider.getContactsCount();
-
-                callback.invoke(contacts);
-                return null;
-            }
-        };
-        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    public void getContactsMatchingString(final String searchString, final Callback callback) {
+        getAllContactsMatchingString(searchString, callback);
     }
 
     /**
@@ -132,8 +122,7 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
      * @param searchString String to match
      * @param callback user provided callback to run at completion
      */
-    @ReactMethod
-    public void getContactsMatchingString(final String searchString, final Callback callback) {
+    private void getAllContactsMatchingString(final String searchString, final Callback callback) {
         AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
             @Override
             protected Void doInBackground(final Void ... params) {
@@ -141,54 +130,6 @@ public class ContactsManager extends ReactContextBaseJavaModule implements Activ
                 ContentResolver cr = context.getContentResolver();
                 ContactsProvider contactsProvider = new ContactsProvider(cr);
                 WritableArray contacts = contactsProvider.getContactsMatchingString(searchString);
-
-                callback.invoke(null, contacts);
-                return null;
-            }
-        };
-        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
-    /**
-     * Retrieves contacts matching a phone number.
-     * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
-     *
-     * @param phoneNumber phone number to match
-     * @param callback user provided callback to run at completion
-     */
-    @ReactMethod
-    public void getContactsByPhoneNumber(final String phoneNumber, final Callback callback) {
-        AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
-            @Override
-            protected Void doInBackground(final Void ... params) {
-                Context context = getReactApplicationContext();
-                ContentResolver cr = context.getContentResolver();
-                ContactsProvider contactsProvider = new ContactsProvider(cr);
-                WritableArray contacts = contactsProvider.getContactsByPhoneNumber(phoneNumber);
-
-                callback.invoke(null, contacts);
-                return null;
-            }
-        };
-        myAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
-    /**
-     * Retrieves contacts matching an email address.
-     * Uses raw URI when <code>rawUri</code> is <code>true</code>, makes assets copy otherwise.
-     *
-     * @param emailAddress email address to match
-     * @param callback user provided callback to run at completion
-     */
-    @ReactMethod
-    public void getContactsByEmailAddress(final String emailAddress, final Callback callback) {
-        AsyncTask<Void,Void,Void> myAsyncTask = new AsyncTask<Void,Void,Void>() {
-            @Override
-            protected Void doInBackground(final Void ... params) {
-                Context context = getReactApplicationContext();
-                ContentResolver cr = context.getContentResolver();
-                ContactsProvider contactsProvider = new ContactsProvider(cr);
-                WritableArray contacts = contactsProvider.getContactsByEmailAddress(emailAddress);
 
                 callback.invoke(null, contacts);
                 return null;

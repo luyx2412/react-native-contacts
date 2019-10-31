@@ -4,7 +4,7 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
-import androidx.annotation.NonNull;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -114,62 +114,6 @@ public class ContactsProvider {
         return contacts;
     }
 
-
-    public WritableArray getContactsByPhoneNumber(String phoneNumber) {
-        Map<String, Contact> matchingContacts;
-        {
-            Cursor cursor = contentResolver.query(
-                    ContactsContract.Data.CONTENT_URI,
-                    FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.CommonDataKinds.Phone.NUMBER + " LIKE ? OR "
-                            + ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER + " LIKE ?",
-                    new String[]{"%" + phoneNumber + "%", "%" + phoneNumber + "%"},
-                    null
-            );
-
-            try {
-                matchingContacts = loadContactsFrom(cursor);
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
-            }
-        }
-
-        WritableArray contacts = Arguments.createArray();
-        for (Contact contact : matchingContacts.values()) {
-            contacts.pushMap(contact.toMap());
-        }
-        return contacts;
-    }
-
-    public WritableArray getContactsByEmailAddress(String emailAddress) {
-        Map<String, Contact> matchingContacts;
-        {
-            Cursor cursor = contentResolver.query(
-                    ContactsContract.Data.CONTENT_URI,
-                    FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.CommonDataKinds.Email.ADDRESS + " LIKE ?",
-                    new String[]{"%" + emailAddress + "%"},
-                    null
-            );
-
-            try {
-                matchingContacts = loadContactsFrom(cursor);
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
-            }
-        }
-
-        WritableArray contacts = Arguments.createArray();
-        for (Contact contact : matchingContacts.values()) {
-            contacts.pushMap(contact.toMap());
-        }
-        return contacts;
-    }
-
      public WritableMap getContactByRawId(String contactRawId) {
 
         // Get Contact Id from Raw Contact Id
@@ -224,13 +168,6 @@ public class ContactsProvider {
         }
 
        return null;
-    }
-
-    public Integer getContactsCount() {
-        Cursor cursor =  contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
-        int count = cursor.getCount();
-        
-        return count;
     }
 
     public WritableArray getContacts() {
@@ -411,43 +348,6 @@ public class ContactsProvider {
                         contact.emails.add(new Contact.Item(label, email, id));
                     }
                     break;
-                case Website.CONTENT_ITEM_TYPE:
-                    String url = cursor.getString(cursor.getColumnIndex(Website.URL));
-                    int websiteType = cursor.getInt(cursor.getColumnIndex(Website.TYPE));
-                    if (!TextUtils.isEmpty(url)) {
-                        String label;
-                        switch (websiteType) {
-                            case Website.TYPE_HOMEPAGE:
-                                label = "homepage";
-                                break;
-                            case Website.TYPE_BLOG:
-                                label = "blog";
-                                break;
-                            case Website.TYPE_PROFILE:
-                                label = "profile";
-                                break;
-                            case Website.TYPE_HOME:
-                                label = "home";
-                                break;
-                            case Website.TYPE_WORK:
-                                label = "work";
-                                break;
-                            case Website.TYPE_FTP:
-                                label = "ftp";
-                                break;
-                            case Website.TYPE_CUSTOM:
-                                if (cursor.getString(cursor.getColumnIndex(Website.LABEL)) != null) {
-                                    label = cursor.getString(cursor.getColumnIndex(Website.LABEL)).toLowerCase();
-                                } else {
-                                    label = "";
-                                }
-                                break;
-                            default:
-                                label = "other";
-                        }
-                        contact.urls.add(new Contact.Item(label, url, id));
-                    }
-                    break;
                 case Organization.CONTENT_ITEM_TYPE:
                     contact.company = cursor.getString(cursor.getColumnIndex(Organization.COMPANY));
                     contact.jobTitle = cursor.getString(cursor.getColumnIndex(Organization.TITLE));
@@ -547,7 +447,6 @@ public class ContactsProvider {
             contact.putString("recordID", contactId);
             contact.putString("rawContactId", rawContactId);
             contact.putString("givenName", TextUtils.isEmpty(givenName) ? displayName : givenName);
-            contact.putString("displayName", displayName);
             contact.putString("middleName", middleName);
             contact.putString("familyName", familyName);
             contact.putString("prefix", prefix);
